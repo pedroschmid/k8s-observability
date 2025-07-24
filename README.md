@@ -13,9 +13,11 @@ It allows you to:
 
 ---
 
-## 🧠 Stack Overview
+## 🧠 Observability Architecture
 
-The observability stack consists of:
+![Observability Architecture](.misc/Observability-architecture.png)
+
+The illustration outlines the key components of the observability architecture:
 
 - **Prometheus**: Scrapes metrics from Kubernetes and apps
 - **Loki + Promtail**: Collects and indexes application logs
