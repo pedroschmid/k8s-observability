@@ -1,0 +1,76 @@
+daemonset:
+  enabled: true
+
+deployment:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+config:
+  enabled: true
+  logLevel: info
+  logFormat: logfmt
+  serverPort: 3101
+  positions:
+    filename: /run/promtail/positions.yaml
+
+  clients:
+    - url: http://loki:3100/loki/api/v1/push
+
+  snippets:
+    pipelineStages:
+      - cri: {}
+    common:
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: node_name
+      - action: replace
+        source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_container_name]
+        target_label: container
+      - action: replace
+        replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+        target_label: __path__
+
+    scrapeConfigs: |
+      - job_name: kubernetes-pods
+        pipeline_stages:
+          {{- toYaml .Values.config.snippets.pipelineStages | nindent 4 }}
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          {{- toYaml .Values.config.snippets.common | nindent 4 }}
+
+defaultVolumes:
+  - name: run
+    hostPath:
+      path: /run/promtail
+  - name: containers
+    hostPath:
+      path: /var/lib/docker/containers
+  - name: pods
+    hostPath:
+      path: /var/log/pods
+
+defaultVolumeMounts:
+  - name: run
+    mountPath: /run/promtail
+  - name: containers
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  - name: pods
+    mountPath: /var/log/pods
+    readOnly: true
