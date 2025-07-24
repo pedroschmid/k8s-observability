@@ -15,7 +15,7 @@ It allows you to:
 
 ## 🧠 Observability Architecture
 
-![Observability Architecture](.misc/Observability-architecture.png)
+![Observability Architecture](.misc/observability-architecture.png)
 
 The illustration outlines the key components of the observability architecture:
 
